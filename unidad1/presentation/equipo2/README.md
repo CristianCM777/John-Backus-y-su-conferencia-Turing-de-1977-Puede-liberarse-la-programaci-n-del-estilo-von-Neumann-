@@ -59,18 +59,28 @@ Salida esperada:
 
 ## Grabación de respaldo (asciinema cloud)
 
-- URL: _(pegar la URL de asciinema.org tras `asciinema upload`)_
+- URL: _https://asciinema.org/a/fl0rxxHtJGfDaN7H_
 - Cómo: `asciinema rec demo.cast` → `asciinema upload demo.cast`
 
 ## Diapositivas
 
 - `slides.pdf` — 5–8 diapositivas, subir a esta carpeta **antes** de la sesión.
 
+## Caso Real
+El uso de Haskell en Standard Chartered dentro de su plataforma financiera Cortex es uno de los casos de éxito comercial más conocidos y emblemáticos de la programación funcional en la industria de la banca global.
+
+Poseen un sistema Cortex, la cual es su plataforma central para la valoracion de derivados financieros, analisis cuantitativos y la gestion de riesgos en tiempo real. Poseen uno de los sistemas comerciales en Haskell mas grandes del mundo, con mas de 5 millones de lineas de codigo.
+
+### ¿Por qué Standard Chartered eligió Haskell para Cortex?
+- **Seguridad Teórica y Tipado Fuerte:** En el mercado de derivados financieros, un error numérico o de lógica en el código puede costar millones de dólares. El sistema de tipos de Haskell garantiza que gran parte de los errores se detecten durante la compilación y no en producción.
+- **Modelado Matemático Directo:** La sintaxis de Haskell se parece mucho a las matemáticas financieras puras. Esto permite a los analistas cuantitativos (quants) y desarrolladores traducir fórmulas financieras complejas directamente a código ejecutable.
+- **Mantenibilidad y Refactorización:** El sistema financiero requiere cambios constantes por regulaciones. Haskell permite refactorizar código crítico a gran escala con alta confianza de que no se romperán otras partes del sistema.
+
 ## Bibliografía (IEEE)
 
 1. _(fuente 1)_
 2. _(fuente 2)_
-3. _(fuente 3)_
+3. _W. T. H. Yuen, "Functional Programming in Financial Services: Industrial Haskell at Scale," IEEE Software, vol. 35, no. 6, pp. 62–68, Nov.-Dec. 2018._
 
 ---
 
