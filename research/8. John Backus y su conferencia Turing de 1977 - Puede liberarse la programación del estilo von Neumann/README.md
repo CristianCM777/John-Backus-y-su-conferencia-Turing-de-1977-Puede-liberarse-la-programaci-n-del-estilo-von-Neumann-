@@ -1,4 +1,4 @@
-# John Backus Conferencia Turing de 1977
+# John Backus y su conferencia Turing de 1977: "¿Puede liberarse la programación del estilo von Neumann?"
 
 -Alumno: Camarillo Molina Cristian 23210553
 
@@ -46,6 +46,74 @@ compone de cuatro elementos bien definidos:
 | **2. Funciones Primitivas ($F$)** | Funciones puras de $O \to O$. Son estrictas: $f(\perp) = \perp$. Incluyen selectoras ($1, 2, \dots$), aritméticas ($+, \times, -$), y reestructuradoras ($\text{trans}$, $\text{distl}$, $\text{distr}$, $\text{tl}$, $\text{rotleft}$). | $\text{distl} : \langle A, \langle B, C \rangle \rangle = \langle \langle A, B \rangle, \langle A, C \rangle \rangle$ |
 | **3. Formas Combinatorias ($C$)** | Operadores de orden superior que toman funciones y producen nuevas funciones sin hacer referencia a variables de datos. | Composición ($\circ$), Construcción ($[f_1, \dots, f_n]$), Condicional ($p \to f; g$), Map ($\alpha f$), Reduce ($/f$). |
 | **4. Definiciones ($D$)** | Mecanismo formal para asignar nombres a expresiones combinatorias: $\text{Def } \text{Nombre} \equiv \text{Expresión}$. No equivale a asignación mutable de memoria. | $\text{Def } \text{Cuadrado} \equiv \times \circ [\text{id}, \text{id}]$ |
+
+### Evidencia: los programas de FP ejecutados en Haskell
+
+> *Sección agregada durante la revisión docente. Traduce a Haskell (GHC 9.14, `runghc Backus.hs`) los programas que Backus usa en su artículo, para comprobar que el estilo "libre de variables" de FP es ejecutable hoy.*
+
+Backus define el **producto interno** como `Def IP ≡ (/+) ∘ (α×) ∘ Trans`: transponer los dos vectores en pares, multiplicar cada par (`α×`, *map*) y reducir con suma (`/+`, *reduce*). En Haskell la misma idea se escribe como una composición de funciones, sin variables de estado ni índices:
+
+```haskell
+-- Programas del sistema FP de Backus (1978) traducidos a Haskell en estilo tácito (point-free)
+import Data.List (transpose)
+
+-- Def IP ≡ (/+) ∘ (α×) ∘ Trans        — producto interno
+ip :: [Int] -> [Int] -> Int
+ip xs ys = (foldr (+) 0 . map (uncurry (*))) (zip xs ys)
+
+-- Versión tácita sobre un solo objeto ⟨xs, ys⟩, igual que en FP
+ipFP :: ([Int], [Int]) -> Int
+ipFP = foldr (+) 0 . map (uncurry (*)) . uncurry zip
+
+-- Def Cuadrado ≡ × ∘ [id, id]          — construcción [f, g] = \x -> (f x, g x)
+construccion :: (a -> b) -> (a -> c) -> a -> (b, c)
+construccion f g x = (f x, g x)
+
+cuadrado :: Int -> Int
+cuadrado = uncurry (*) . construccion id id
+
+-- Def MM ≡ (α α IP) ∘ (α distl) ∘ distr ∘ [1, Trans ∘ 2]   — multiplicación de matrices
+mm :: [[Int]] -> [[Int]] -> [[Int]]
+mm a b = [[ip fila col | col <- transpose b] | fila <- a]
+
+-- Contraste: la versión "von Neumann" con estado mutable simulado palabra por palabra
+ipImperativo :: [Int] -> [Int] -> Int
+ipImperativo xs ys = go 0 0
+  where
+    n = min (length xs) (length ys)
+    go i acc
+      | i >= n    = acc
+      | otherwise = go (i + 1) (acc + xs !! i * ys !! i)   -- c := c + a[i] * b[i]
+
+main :: IO ()
+main = do
+  print (ip [1, 2, 3] [6, 5, 4])                 -- 28
+  print (ipFP ([1, 2, 3], [6, 5, 4]))            -- 28
+  print (ipImperativo [1, 2, 3] [6, 5, 4])       -- 28
+  print (cuadrado 7)                             -- 49
+  print (mm [[1, 2], [3, 4]] [[5, 6], [7, 8]])   -- [[19,22],[43,50]]
+```
+
+Salida:
+
+```
+28
+28
+28
+49
+[[19,22],[43,50]]
+```
+
+Las tres versiones del producto interno dan `28`, pero son muy distintas de leer:
+
+| | `ipFP` (estilo FP) | `ipImperativo` (estilo von Neumann) |
+| :--- | :--- | :--- |
+| Unidad de trabajo | El vector completo | Un elemento a la vez (`xs !! i`) |
+| Estado | Ninguno | Índice `i` y acumulador `acc` |
+| Razonamiento | Leyes algebraicas: `map f . map g = map (f . g)` | Seguir cómo cambian `i` y `acc` en cada paso |
+| Correspondencia con FP | `(/+) ∘ (α×) ∘ Trans` casi literal | `c := c + a[i] * b[i]` palabra por palabra |
+
+Esta es exactamente la tesis de Backus: el programa imperativo empuja valores "palabra por palabra" por el cuello de botella, mientras que el programa FP opera sobre objetos completos y se puede transformar con álgebra. `map`/`foldr` son hoy los mismos bloques que usa MapReduce, lo que conecta con tu conclusión.
 
 ## Conclusion
 La conferencia de John Backus en 1977 expuso una limitación estructural en la forma en que se diseña el software: la subordinacion del pensamiento del programador a la arquitectura fisica de la maquina. Aunque la propuesta de Backus no logro desplazar al hardware de von Neumann ni sustituir la hegemonia comercial de lenguajes imperativos como C o Fortran, su impacto teorico y conceptual fue profundo.
